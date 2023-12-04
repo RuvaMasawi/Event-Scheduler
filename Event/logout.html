@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Logout</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 100px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    p {
+      color: #777;
+    }
+
+    a {
+      color: #337ab7;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+  <script>
+    function confirmLogout() {
+      if (confirm("Are you sure you want to log out?")) {
+        // Perform the logout action here
+      } else {
+        // Redirect back to the calendar page or do any other desired action
+      }
+    }
+  </script>
+</head>
+<body>
+  <h1>Logout</h1>
+  <p>Click the button below to log out of your account.</p>
+  <button onclick="confirmLogout()">Log Out</button>
+</body>
+</html>

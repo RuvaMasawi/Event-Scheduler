@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Calendar</title>
+  <style>
+    /* CSS calendar */
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      width: 800px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    #calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
+
+    .day {
+      border: 1px solid rgba(247, 193, 157, 0.747))142, 142);
+      padding: 5px;
+      text-align: center;
+      background-color: #F0F0F0;
+      cursor: pointer;
+    }
+
+    .day:hover {
+      background-color: #E0E0E0;
+    }
+
+    .event {
+      background-color: #007BFF;
+      color: #FFF;
+      padding: 2px;
+      margin-bottom: 2px;
+    }
+
+    .reminder {
+      background-color: #FFC107;
+      color: #333;
+      padding: 2px;
+      margin-bottom: 2px;
+    }
+
+    #event-form {
+      margin-top: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    input[type="text"],
+    input[type="datetime-local"] {
+      width: 100%;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #CCCCCC;
+    }
+
+    input[type="submit"] {
+      padding: 8px 16px;
+      border-radius: 5px;
+      border: none;
+      color: #FFF;
+      background-color: #007BFF;
+      cursor: pointer;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #0056b3;
+    }
+
+    #nav-container {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    #nav-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    #year-select {
+      padding: 5px;
+      border-radius: 5px;
+      border: 1px solid #CCCCCC;
+    }
+
+    #month-select {
+      padding: 5px;
+      border-radius: 5px;
+      border: 1px solid #CCCCCC;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Event Calendar</h1>
+
+    <div id="nav-container">
+      <button id="prev-year-btn">Previous Year</button>
+      <div>
+        <select id="year-select"></select>
+        <select id="month-select"></select>
+      </div>
+      <button id="next-year-btn">Next Year</button>
+    </div>
+
+    <div id="calendar"></div>
+
+    <div id="event-form">
+      <h2>Add Event</h2>
+      <form id="add-event-form">
+        <div class="form-group">
+          <label for="event-name">Event Name</label>
+          <input type="text" id="event-name" placeholder="Enter event name" required>
+        </div>
+        <div class="form-group">
+          <label for="event-date">Event Date and Time</label>
+          <input type="datetime-local" id="event-date" required>
+        </div>
+        <div class="form-group">
+          <input type="submit" id="add-event-btn" value="Add Event">
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const calendarContainer = document.getElementById('calendar');
+      const eventForm = document.getElementById('add-event-form');
+      const eventNameInput = document.getElementById('event-name');
+      const eventDateInput = document.getElementById('event-date');
+      const prevYearButton = document.getElementById('prev-year-btn');
+      const nextYearButton = document.getElementById('next-year-btn');
+      const yearSelect = document.getElementById('year-select');
+      const monthSelect = document.getElementById('month-select');
+
+      const currentDate = new Date();
+      let currentYear = currentDate.getFullYear();
+      let currentMonth = currentDate.getMonth();
+      let currentDay = currentDate.getDate();
+
+      const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+     ];
+      const daysInWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+      // Function to generate the calendar for a given month and year
+      function generateCalendar(year, month) {
+        const firstDayOfMonth = new Date(year, month, 1);
+        const lastDayOfMonth = new Date(year, month + 1, 0);
+        const daysInMonth = lastDayOfMonth.getDate();
+        const startDayOfWeek = firstDayOfMonth.getDay();
+
+        calendarContainer.innerHTML = '';
+
+        // Header row with month and year
+        const header = document.createElement('div');
+        header.className = 'day';
+        header.style.gridColumn = '1 / span 7';
+        header.textContent = `${monthNames[month]} ${year}`;
+        calendarContainer.appendChild(header);
+
+        // Day labels row
+        for (let i = 0; i < daysInWeek.length; i++) {
+          const dayLabel = document.createElement('div');
+          dayLabel.className = 'day';
+          dayLabel.textContent = daysInWeek[i];
+          calendarContainer.appendChild(dayLabel);
+        }
+
+        // Create the empty cells for the days before the start of the month
+        for (let i = 0; i < startDayOfWeek; i++) {
+          const emptyCell = document.createElement('div');
+          emptyCell.className = 'day';
+          calendarContainer.appendChild(emptyCell);
+        }
+
+        // Create the cells for the days of the month
+        for (let day = 1; day <= daysInMonth; day++) {
+          const cell = document.createElement('div');
+          cell.className = 'day';
+          cell.textContent = day;
+          calendarContainer.appendChild(cell);
+
+          // Add event listeners to the cells
+          cell.addEventListener('click', function() {
+            const selectedDate = new Date(year, month, day);
+            currentYear = selectedDate.getFullYear();
+            currentMonth = selectedDate.getMonth();
+            currentDay = selectedDate.getDate();
+            showEventsForDate(selectedDate);
+          });
+        }
+      }
+
+      // Function to show events for a specific date
+      function showEventsForDate(date) {
+        // Clear existing events
+        const events = document.querySelectorAll('.event, .reminder');
+        events.forEach(function(event) {
+          event.remove();
+        });
+
+        // Get events for the selected date from storage
+        const storedEvents = JSON.parse(localStorage.getItem(date.toISOString())) || [];
+
+        // Create event elements and add them to the calendar
+        storedEvents.forEach(function(event) {
+          const eventElement = document.createElement('div');
+          eventElement.className = event.type === 'event' ? 'event' : 'reminder';
+          eventElement.textContent = event.name;
+          calendarContainer.appendChild(eventElement);
+        });
+      }
+
+      // Function to add an event
+      function addEvent(name, date) {
+        const event = {
+          name: name,
+          type: 'event'
+        };
+
+        // Get existing events for the selected date from storage
+        const storedEvents = JSON.parse(localStorage.getItem(date.toISOString())) || [];
+
+        // Add the new event to the existing events
+        storedEvents.push(event);
+
+        // Store the updated events for the selected date in storage
+        localStorage.setItem(date.toISOString(), JSON.stringify(storedEvents));
+      }
+
+      // Function to handle the form submission
+      function handleFormSubmit(event) {
+        event.preventDefault();
+        const eventName = eventNameInput.value;
+        const eventDate = new Date(eventDateInput.value);
+        addEvent(eventName, eventDate);
+        showEventsForDate(eventDate);
+        eventNameInput.value = '';
+        eventDateInput.value = '';
+      }
+
+      // Function to populate the year and month select options
+      function populateYearAndMonthSelect() {
+        yearSelect.innerHTML = '';
+        monthSelect.innerHTML = '';
+
+        for (let year = currentYear - 10; year <= currentYear + 10; year++) {
+          const option = document.createElement('option');
+          option.value = year;
+          option.textContent = year;
+          if (year === currentYear) {
+            option.selected = true;
+          }
+          yearSelect.appendChild(option);
+        }
+
+        for (let month = 0; month < 12; month++) {
+          const option = document.createElement('option');
+          option.value = month;
+          option.textContent = monthNames[month];
+          if (month === currentMonth) {
+            option.selected = true;
+          }
+          monthSelect.appendChild(option);
+        }
+      }
+
+      // Function to handle navigation to the previous year
+      function navigateToPrevYear() {
+        currentYear--;
+        populateYearAndMonthSelect();
+        generateCalendar(currentYear, currentMonth);
+        showEventsForDate(new Date(currentYear, currentMonth, currentDay));
+      }
+
+      // Function to handle navigation to the next year
+      function navigateToNextYear() {
+        currentYear++;
+        populateYearAndMonthSelect();
+        generateCalendar(currentYear, currentMonth);
+        showEventsForDate(new Date(currentYear, currentMonth, currentDay));
+      }
+
+      // Function to handle navigation to the previous month
+      function navigateToPrevMonth() {
+        if (currentMonth === 0) {
+          currentMonth = 11;
+          currentYear--;
+        } else {
+          currentMonth--;
+        }
+        populateYearAndMonthSelect();
+        generateCalendar(currentYear, currentMonth);
+        showEventsForDate(new Date(currentYear, currentMonth, currentDay));
+      }
+
+      // Function to handle navigation to the next month
+      function navigateToNextMonth() {
+        if (currentMonth === 11) {
+          currentMonth = 0;
+          currentYear++;
+        } else {
+          currentMonth++;
+        }
+        populateYearAndMonthSelect();
+        generateCalendar(currentYear, currentMonth);
+        showEventsForDate(new Date(currentYear, currentMonth, currentDay));
+      }
+
+      // Add event listener for form submission
+      eventForm.addEventListener('submit', handleFormSubmit);
+
+      // Add event listeners for navigation buttons
+      prevYearButton.addEventListener('click', navigateToPrevYear);
+      nextYearButton.addEventListener('click', navigateToNextYear);
+      yearSelect.addEventListener('change', function() {
+        currentYear = parseInt(yearSelect.value);
+        generateCalendar(currentYear, currentMonth);
+        showEventsForDate(new Date(currentYear, currentMonth, currentDay));
+      });
+      monthSelect.addEventListener('change', function() {
+        currentMonth = parseInt(monthSelect.value);
+        generateCalendar(currentYear, currentMonth);
+        showEventsForDate(new Date(currentYear, currentMonth, currentDay));
+      });
+
+      // Initialize the calendar
+      generateCalendar(currentYear, currentMonth);
+      showEventsForDate(currentDate);
+      populateYearAndMonthSelect();
+    });
+  </script>
+</body>
+</html>
